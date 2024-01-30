@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    private bool _isGamePaused;
+    public bool IsGamePaused { get; private set; }
 
     // This instance will be globally accessible in the code
     public static GameManager Instance { get; private set; }
@@ -47,8 +47,8 @@ public class GameManager : MonoBehaviour
     public void PauseGame()
     {
         if (SceneManager.GetActiveScene().name == "MainMenu") return;
-        _isGamePaused = !_isGamePaused;
-        if (_isGamePaused)
+        IsGamePaused = !IsGamePaused;
+        if (IsGamePaused)
         {
             Time.timeScale = 0;
             SceneManager.LoadScene("PausedUI", LoadSceneMode.Additive);
