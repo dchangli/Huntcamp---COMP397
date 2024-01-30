@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,18 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(this);
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    // Event that is triggerd when the scene is loaded
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (mode == LoadSceneMode.Single)
+        {
+            Debug.Log("test");
+            PauseGame(true);
+        }
     }
 
     // Will transfer the player to the gameplay scene.
@@ -44,19 +57,26 @@ public class GameManager : MonoBehaviour
     }
 
     // This will pause the game.
-    public void PauseGame()
+    public void PauseGame(bool forceResume = false)
     {
         if (SceneManager.GetActiveScene().name == "MainMenu") return;
-        IsGamePaused = !IsGamePaused;
-        if (IsGamePaused)
+        IsGamePaused = forceResume ? false : !IsGamePaused;
+        try
         {
-            Time.timeScale = 0;
-            SceneManager.LoadScene("PausedUI", LoadSceneMode.Additive);
+            if (IsGamePaused)
+            {
+                Time.timeScale = 0;
+                SceneManager.LoadScene("PausedUI", LoadSceneMode.Additive);
+            }
+            else
+            {
+                Time.timeScale = 1;
+                SceneManager.UnloadScene("PausedUI");
+            }
         }
-        else
+        catch (Exception e)
         {
-            Time.timeScale = 1;
-            SceneManager.UnloadSceneAsync("PausedUI");
+
         }
     }
 

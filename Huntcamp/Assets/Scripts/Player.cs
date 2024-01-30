@@ -33,10 +33,11 @@ public class Player : MonoBehaviour
         LoadPlayerControls();
     }
 
+    [SerializeField] private float _sensitivity;
+    [SerializeField] private bool _invertVertical;
     // Update is called once per frame
     void Update()
     {
-        
     }
 
     private void FixedUpdate()
@@ -67,14 +68,15 @@ public class Player : MonoBehaviour
     }
     private void OnLookPerformed(InputAction.CallbackContext context)
     {
-        if (GameManager.Instance.IsGamePaused) return; 
-        transform.Rotate(Vector3.up * (context.ReadValue<Vector2>().x * 1), Space.World);
+        if (GameManager.Instance.IsGamePaused) return;
+        transform.Rotate(Vector3.up * (context.ReadValue<Vector2>().x * _sensitivity), Space.World);
 
-        float input = context.ReadValue<Vector2>().y;
-        float rotationAmount = input * -1;
-
-        // Apply the rotation to the transform if needed
-        _head.transform.Rotate(Vector3.left * rotationAmount, Space.Self);
+        Vector2 deltaRotation = new Vector2(0, context.ReadValue<Vector2>().y * _sensitivity);
+        deltaRotation.y *= _invertVertical ? 1.0f : -1.0f;
+        float pitchAngle = _head.transform.localEulerAngles.x;
+        if (pitchAngle > 180) pitchAngle -= 360;
+        pitchAngle = Mathf.Clamp(pitchAngle + deltaRotation.y, -90.0f, 90.0f);
+        _head.transform.localRotation = Quaternion.Euler(pitchAngle, 0.0f, 0.0f);
     }
 
     private void OnMovementPerformed(InputAction.CallbackContext context)
