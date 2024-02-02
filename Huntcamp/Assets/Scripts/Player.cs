@@ -19,11 +19,27 @@ public class Player : MonoBehaviour
     [Header("Character Movement")]
     [SerializeField] 
     private float _speed;
-    [SerializeField] 
+    [SerializeField]
     private float _jumpForce = 3.0f;
+    [Header("Ground Detection")]
+    [SerializeField] 
+    Transform _groundCheck;
+    [SerializeField] 
+    float _groundRadius = 0.5f;
+    [SerializeField] 
+    LayerMask _groundMask;
+    [SerializeField] 
+    bool _isGrounded;
     private Vector2 _move; // Player performed movement
+    [SerializeField] 
+    private float _sensitivity;
+    [SerializeField] 
+    private bool _invertVertical;
 
-    private Quaternion _rotate;
+    [Header("Player Death")]
+    [SerializeField]
+    private Transform _spawnPoint;
+    public Action Respawn;
 
     private void Awake()
     {
@@ -31,10 +47,23 @@ public class Player : MonoBehaviour
 
         // Loads the player controls in a separated method
         LoadPlayerControls();
+
+        // Teleports player to the spawn point
+        Respawn?.Invoke();
     }
 
-    [SerializeField] private float _sensitivity;
-    [SerializeField] private bool _invertVertical;
+    private void OnEnable()
+    {
+        _inputs.Enable();
+        Respawn += OnRespawnPlayer;
+    }
+
+    private void OnDisable()
+    {
+        _inputs.Disable();
+        Respawn -= OnRespawnPlayer;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -42,6 +71,8 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // Checks if the player is on the ground
+        _isGrounded = Physics.CheckSphere(_groundCheck.position, _groundRadius, _groundMask);
 
         // Updates the movement of the player
         UpdateMovmeent();
@@ -57,7 +88,6 @@ public class Player : MonoBehaviour
     {
         // Initializes the controls and enables it
         _inputs = new PlayerControls();
-        _inputs.Enable();
 
         // Subscribe events
         _inputs.Player.Movement.performed += OnMovementPerformed;
@@ -88,7 +118,20 @@ public class Player : MonoBehaviour
 
     private void OnJumpPerformed(InputAction.CallbackContext context)
     {
-        if (GameManager.Instance.IsGamePaused) return;
+        if (GameManager.Instance.IsGamePaused || !_isGrounded) return;
         _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+    }
+    
+    private void OnRespawnPlayer()
+    {
+        this.transform.position = _spawnPoint.position;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("DeathZone"))
+        {
+            Respawn?.Invoke();
+        }
     }
 }
