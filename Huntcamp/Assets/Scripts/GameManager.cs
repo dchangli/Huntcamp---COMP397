@@ -32,9 +32,21 @@ public class GameManager : MonoBehaviour
     {
         if (mode == LoadSceneMode.Single)
         {
-            Debug.Log("test");
             PauseGame(true);
         }
+    }
+
+    public bool IsSceneLoaded(string sceneName)
+    {
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            Scene scene = SceneManager.GetSceneAt(i);
+            if (scene.name == sceneName)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Will transfer the player to the gameplay scene.
@@ -57,9 +69,15 @@ public class GameManager : MonoBehaviour
     }
 
     // This will pause the game.
-    public void PauseGame(bool forceResume = false)
+    public void PauseGame(bool forceResume = false, bool forcePause = false)
     {
         if (SceneManager.GetActiveScene().name == "MainMenu") return;
+        if (forcePause)
+        {
+            IsGamePaused = true;
+            Time.timeScale = 0f;
+            return;
+        }
         IsGamePaused = forceResume ? false : !IsGamePaused;
         try
         {
@@ -73,19 +91,20 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 1;
                 SceneManager.UnloadScene("PausedUI");
             }
-        }
-        catch (Exception e)
-        {
-
-        }
+        } catch { }
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            PauseGame();
-        }
+        UpdateCursor();
+    }
+
+    private void UpdateCursor()
+    {
+        bool showCursor = (IsGamePaused || SceneManager.GetActiveScene().name == "MainMenu");
+
+        Cursor.lockState = showCursor ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = showCursor;
     }
 }
 

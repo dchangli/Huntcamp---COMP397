@@ -3,13 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Properties;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
+    // Set player as singleton
+    public static Player Instance { get; private set; }
+
     [Header("Player Controller")]
     // New Input System instance
     private PlayerControls _inputs = null;
@@ -39,29 +44,39 @@ public class Player : MonoBehaviour
     [Header("Player Death")]
     [SerializeField]
     private Transform _spawnPoint;
-    public Action Respawn;
+    public Action OnRespawn;
+    public Action OnDeath;
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else { Destroy(this); return; };
+
         _rb = GetComponent<Rigidbody>();
 
         // Loads the player controls in a separated method
         LoadPlayerControls();
 
         // Teleports player to the spawn point
-        Respawn?.Invoke();
+        OnRespawn?.Invoke();
     }
 
     private void OnEnable()
     {
         _inputs.Enable();
-        Respawn += OnRespawnPlayer;
+        OnRespawn += OnPlayerRespawn;
+        OnDeath += OnPlayerDeath;
     }
 
     private void OnDisable()
     {
         _inputs.Disable();
-        Respawn -= OnRespawnPlayer;
+        OnRespawn -= OnPlayerRespawn;
+        OnDeath -= OnPlayerDeath;
     }
 
     // Update is called once per frame
@@ -122,7 +137,7 @@ public class Player : MonoBehaviour
         _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
     }
     
-    private void OnRespawnPlayer()
+    private void OnPlayerRespawn()
     {
         this.transform.position = _spawnPoint.position;
     }
@@ -131,7 +146,12 @@ public class Player : MonoBehaviour
     {
         if (other.CompareTag("DeathZone"))
         {
-            Respawn?.Invoke();
+            OnDeath?.Invoke();
         }
+    }
+
+    private void OnPlayerDeath()
+    {
+        DeathScreen.SetDeathScreen(true);
     }
 }
