@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/UI/PausedUI.unity
     guid: 03d11cc85ece5d94ca2dc45593d6d6cf
+  - enabled: 1
+    path: Assets/Scenes/DeathScreen.unity
+    guid: a2a54a6776e724f0f8429059d52fa49f
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 7806a66339923254eb294e1a1b7adacb,
       type: 2}
