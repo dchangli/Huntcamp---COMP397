@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Properties;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,19 +13,32 @@ public class Enemy : MonoBehaviour
     private Animator _animator;
 
     [Header("Attack")]
-    public float ChaseRange = 5f;
-    public float AttackRange = 1f;
-    public float AttackDelay = 2f;
-    public bool IsAttacking = false;
+    [SerializeField]
+    private float _chaseRange = 5f;
+    [SerializeField]
+    private float _attackRange = 1f;
+    [SerializeField]
+    private float _attackDelay = 2f;
+    [SerializeField]
+    private bool _isAttacking = false;
 
     [Header("Movement")]
-    public float Speed = 2f;
-    public bool IsStopped = false;
+    [SerializeField]
+    private float _speed = 2f;
+    [SerializeField]
+    private bool _isStopped = false;
+
+    [Header("Health")]
+    [SerializeField]
+    private int _maxHealth = 5;
+    private int _curHealth = 0;
 
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
         _animator = GetComponent<Animator>();
+
+        _curHealth = _maxHealth;
     }
 
     void Update()
@@ -33,16 +47,21 @@ public class Enemy : MonoBehaviour
 
         UpdateMovement();
         UpdateAttack();
+
+        if (_curHealth <= 0)
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     void UpdateMovement()
     {
         _agent.SetDestination(Player.Instance.transform.position);
         float distance = Vector3.Distance(Player.Instance.transform.position, this.transform.position);
-        IsStopped = !(distance <= ChaseRange && distance >= AttackRange);
-        _agent.speed = IsStopped ? 0 : Speed;
-        _animator.SetBool("WalkForward", !IsStopped);
-        _animator.SetBool("Idle", IsStopped);
+        _isStopped = !(distance <= _chaseRange && distance >= _attackRange);
+        _agent.speed = _isStopped ? 0 : _speed;
+        _animator.SetBool("WalkForward", !_isStopped);
+        _animator.SetBool("Idle", _isStopped);
     }
 
     private float attackCooldown = 0;
@@ -50,13 +69,21 @@ public class Enemy : MonoBehaviour
     {
         attackCooldown -= Time.deltaTime;
 
-        IsAttacking = (Vector3.Distance(Player.Instance.transform.position, this.transform.position) <= AttackRange);
+        _isAttacking = (Vector3.Distance(Player.Instance.transform.position, this.transform.position) <= _attackRange);
 
-        if (IsAttacking && attackCooldown <= 0)
+        if (_isAttacking && attackCooldown <= 0)
         {
             _animator.SetTrigger("Attack1");
-            attackCooldown = AttackDelay;
+            attackCooldown = _attackDelay;
             Player.Instance.OnDamage?.Invoke(this);
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.CompareTag("Bullet"))
+        {
+            _curHealth--;
         }
     }
 

@@ -2102,6 +2102,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c9ccc1256ee8ce4b8b5c0eaa61b9e82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _chaseRange: 10
+  _attackRange: 2.5
+  _attackDelay: 2
+  _isAttacking: 0
+  _speed: 2
+  _isStopped: 0
+  _maxHealth: 5
 --- !u!1 &8002475675295336084
 GameObject:
   m_ObjectHideFlags: 0

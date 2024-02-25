@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Properties;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEditor.Rendering;
@@ -47,7 +48,17 @@ public class Player : MonoBehaviour
     public Action OnRespawn;
     public Action OnDeath;
 
+    [Header("Player Damage")]
+    [SerializeField]
+    private ParticleSystem _muzzleParticle;
+    [SerializeField]
+    private Transform _muzzlePosition;
     public Action<Enemy> OnDamage;
+    [SerializeField]
+    private GameObject _bulletObject;
+    [SerializeField]
+    private float _bulletSpeed = 10;
+    private float _shootCooldown = 0;
 
     private void Awake()
     {
@@ -85,6 +96,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        _shootCooldown -= Time.deltaTime;
     }
 
     private void FixedUpdate()
@@ -113,6 +125,7 @@ public class Player : MonoBehaviour
         _inputs.Player.Jump.performed += OnJumpPerformed;
         _inputs.Player.Look.performed += OnLookPerformed;
         _inputs.UI.Pause.performed += (ctx) => GameManager.Instance.PauseGame();
+        _inputs.Player.Shoot.performed += OnPlayerShoot;
     }
     private void OnLookPerformed(InputAction.CallbackContext context)
     {
@@ -162,5 +175,21 @@ public class Player : MonoBehaviour
     {
         // Here is the player damage logic going to be handled
         Debug.Log("test damage");
+    }
+
+    private void OnPlayerShoot(InputAction.CallbackContext context)
+    {
+        if (_shootCooldown > 0) return;
+        _muzzleParticle.Play();
+        ShootBullet();
+        _shootCooldown = 1;
+    }
+
+    private void ShootBullet()
+    {
+        GameObject bullet = Instantiate(_bulletObject, _muzzlePosition.position, _muzzlePosition.rotation);
+        Vector3 shootDirection = _muzzlePosition.forward;
+        Rigidbody bulletRigidbody = bullet.GetComponent<Rigidbody>();
+        bulletRigidbody.AddForce(shootDirection * _bulletSpeed, ForceMode.Impulse);
     }
 }
