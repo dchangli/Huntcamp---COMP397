@@ -47,6 +47,8 @@ public class Player : MonoBehaviour
     public Action OnRespawn;
     public Action OnDeath;
 
+    public Action<Enemy> OnDamage;
+
     private void Awake()
     {
         if (Instance == null)
@@ -70,6 +72,7 @@ public class Player : MonoBehaviour
         _inputs.Enable();
         OnRespawn += OnPlayerRespawn;
         OnDeath += OnPlayerDeath;
+        OnDamage += OnPlayerDamage;
     }
 
     private void OnDisable()
@@ -153,5 +156,11 @@ public class Player : MonoBehaviour
     private void OnPlayerDeath()
     {
         DeathScreen.SetDeathScreen(true);
+    }
+
+    private void OnPlayerDamage(Enemy enemy)
+    {
+        // Here is the player damage logic going to be handled
+        Debug.Log("test damage");
     }
 }
