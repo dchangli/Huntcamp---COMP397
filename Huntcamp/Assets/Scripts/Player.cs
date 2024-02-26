@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _bulletSpeed = 10;
     private float _shootCooldown = 0;
+    private float _health = 2;
 
     private void Awake()
     {
@@ -174,6 +175,7 @@ public class Player : MonoBehaviour
     private void OnPlayerDamage(Enemy enemy)
     {
         // Here is the player damage logic going to be handled
+        _health = 0;
         Debug.Log("test damage");
     }
 
