@@ -8,7 +8,7 @@ using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
@@ -48,6 +48,13 @@ public class Player : MonoBehaviour
     public Action OnRespawn;
     public Action OnDeath;
 
+    [Header("Player Health")]
+    [SerializeField]
+    private int _maxHealth = 4;
+    private int _curHealth;
+    [SerializeField]
+    private Slider _healthSlider;
+
     [Header("Player Damage")]
     [SerializeField]
     private ParticleSystem _muzzleParticle;
@@ -70,6 +77,10 @@ public class Player : MonoBehaviour
         else { Destroy(this); return; };
 
         _rb = GetComponent<Rigidbody>();
+
+        // Sets the health system
+        _healthSlider.maxValue = _maxHealth;
+        _curHealth = _maxHealth;
 
         // Loads the player controls in a separated method
         LoadPlayerControls();
@@ -97,6 +108,8 @@ public class Player : MonoBehaviour
     void Update()
     {
         _shootCooldown -= Time.deltaTime;
+
+        _healthSlider.value = _curHealth;
     }
 
     private void FixedUpdate()
@@ -169,12 +182,15 @@ public class Player : MonoBehaviour
     private void OnPlayerDeath()
     {
         DeathScreen.SetDeathScreen(true);
+        _curHealth = _maxHealth;
     }
 
     private void OnPlayerDamage(Enemy enemy)
     {
         // Here is the player damage logic going to be handled
-        Debug.Log("test damage");
+        _curHealth--;
+
+        if (_curHealth <= 0) OnDeath.Invoke();
     }
 
     private void OnPlayerShoot(InputAction.CallbackContext context)
