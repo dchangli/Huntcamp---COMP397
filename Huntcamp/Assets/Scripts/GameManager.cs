@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.UI;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+using System.Linq.Expressions;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,6 +16,9 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // Here the Instance will be asigned if the instance doens't exist yet
+
+
+    public static GameSave GameSave { get; private set; }
     private void Awake()
     {
         if (Instance != null)
@@ -84,6 +89,7 @@ public class GameManager : MonoBehaviour
             if (IsGamePaused)
             {
                 Time.timeScale = 0;
+                SaveGame();
                 SceneManager.LoadScene("PausedUI", LoadSceneMode.Additive);
             }
             else
@@ -105,6 +111,37 @@ public class GameManager : MonoBehaviour
 
         Cursor.lockState = showCursor ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = showCursor;
+    }
+
+    public void SaveGame()
+    {
+        Vector3 position = Player.Instance.transform.position;
+        PlayerPrefs.SetString("GameData", JsonConvert.SerializeObject(new GameSave
+        {
+            PlayerHealth = Player.Instance._curHealth,
+            PlayerPosition = new float[] { position.x, position.y, position.z }
+        }));
+    }
+
+    public GameSave LoadGameSave()
+    {
+        string gameData = PlayerPrefs.GetString("GameData");
+        Debug.Log(gameData);
+        if (string.IsNullOrEmpty(gameData)) return null;
+        return JsonConvert.DeserializeObject<GameSave>(gameData);
+    }
+}
+
+[Serializable]
+public class GameSave
+{
+    public float[] PlayerPosition { get; set; }
+    public int PlayerHealth { get; set; }
+
+    public Vector3 GetPlayerPosition()
+    {
+        if (PlayerPosition != null && PlayerPosition.Length == 3) return new Vector3(PlayerPosition[0], PlayerPosition[1], PlayerPosition[2]);
+        else return Vector3.zero;
     }
 }
 

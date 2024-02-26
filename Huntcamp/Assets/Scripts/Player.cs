@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
     [Header("Player Health")]
     [SerializeField]
     private int _maxHealth = 4;
-    private int _curHealth;
+    public int _curHealth;
     [SerializeField]
     private Slider _healthSlider;
 
@@ -72,9 +72,8 @@ public class Player : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(this);
         }
-        else { Destroy(this); return; };
+        else { return; };
 
         _rb = GetComponent<Rigidbody>();
 
@@ -86,13 +85,13 @@ public class Player : MonoBehaviour
         LoadPlayerControls();
 
         // Teleports player to the spawn point
+        OnRespawn += OnPlayerRespawn;
         OnRespawn?.Invoke();
     }
 
     private void OnEnable()
     {
         _inputs.Enable();
-        OnRespawn += OnPlayerRespawn;
         OnDeath += OnPlayerDeath;
         OnDamage += OnPlayerDamage;
     }
@@ -168,14 +167,12 @@ public class Player : MonoBehaviour
     
     private void OnPlayerRespawn()
     {
-        this.transform.position = _spawnPoint.position;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("DeathZone"))
+        GameSave gameSave = GameManager.Instance.LoadGameSave();
+        if (gameSave == null) this.transform.position = _spawnPoint.position;
+        else
         {
-            OnDeath?.Invoke();
+            this.transform.position = gameSave.GetPlayerPosition();
+            this._curHealth = gameSave.PlayerHealth;
         }
     }
 
@@ -183,11 +180,11 @@ public class Player : MonoBehaviour
     {
         DeathScreen.SetDeathScreen(true);
         _curHealth = _maxHealth;
+        PlayerPrefs.SetString("GameData", "");
     }
 
     private void OnPlayerDamage(Enemy enemy)
     {
-        // Here is the player damage logic going to be handled
         _curHealth--;
 
         if (_curHealth <= 0) OnDeath.Invoke();
