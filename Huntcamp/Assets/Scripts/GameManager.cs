@@ -109,7 +109,7 @@ public class GameManager : MonoBehaviour
     {
         bool showCursor = (IsGamePaused || SceneManager.GetActiveScene().name == "MainMenu");
 
-        Cursor.lockState = showCursor ? CursorLockMode.None : CursorLockMode.Locked;
+        //Cursor.lockState = showCursor ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = showCursor;
     }
 

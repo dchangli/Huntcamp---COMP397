@@ -37,10 +37,14 @@ public class Player : MonoBehaviour
     [SerializeField] 
     bool _isGrounded;
     private Vector2 _move; // Player performed movement
+    private Vector2 _jump;
+    private Vector2 _shoot;
     [SerializeField] 
     private float _sensitivity;
     [SerializeField] 
     private bool _invertVertical;
+    [SerializeField] Joystick _joystick;
+    [SerializeField] Button _jumpbtn;
 
     [Header("Player Death")]
     [SerializeField]
@@ -76,7 +80,7 @@ public class Player : MonoBehaviour
         else { return; };
 
         _rb = GetComponent<Rigidbody>();
-
+        
         // Sets the health system
         _healthSlider.maxValue = _maxHealth;
         _curHealth = _maxHealth;
@@ -113,6 +117,8 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        _move = _joystick.Direction;
+        //_jump = _jumpbtn;
         // Checks if the player is on the ground
         _isGrounded = Physics.CheckSphere(_groundCheck.position, _groundRadius, _groundMask);
 
@@ -163,6 +169,7 @@ public class Player : MonoBehaviour
     {
         if (GameManager.Instance.IsGamePaused || !_isGrounded) return;
         _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+
     }
     
     private void OnPlayerRespawn()
