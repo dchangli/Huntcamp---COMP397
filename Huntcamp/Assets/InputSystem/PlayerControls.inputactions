@@ -100,17 +100,6 @@
                 },
                 {
                     "name": "",
-                    "id": "25c2ea07-1d96-4a99-8d48-291d0183d59b",
-                    "path": "<Touchscreen>/Press",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Jump",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "0d3bb033-6560-4199-a9f0-d8470b6defc3",
                     "path": "<Mouse>/delta",
                     "interactions": "",

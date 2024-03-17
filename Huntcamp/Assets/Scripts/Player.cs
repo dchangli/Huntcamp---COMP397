@@ -43,8 +43,10 @@ public class Player : MonoBehaviour
     private float _sensitivity;
     [SerializeField] 
     private bool _invertVertical;
-    [SerializeField] Joystick _joystick;
-    [SerializeField] Button _jumpbtn;
+    [SerializeField] Joystick _moveJoystick;
+    [SerializeField] Joystick _lookJoystick;
+    [SerializeField] Button _jumpBtn;
+    [SerializeField] Button _fireBtn;
 
     [Header("Player Death")]
     [SerializeField]
@@ -117,7 +119,8 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _move = _joystick.Direction;
+        _move = _moveJoystick.Direction;
+        OnLookPerformed(_lookJoystick.Direction);
         //_jump = _jumpbtn;
         // Checks if the player is on the ground
         _isGrounded = Physics.CheckSphere(_groundCheck.position, _groundRadius, _groundMask);
@@ -140,17 +143,19 @@ public class Player : MonoBehaviour
         // Subscribe events
         _inputs.Player.Movement.performed += OnMovementPerformed;
         _inputs.Player.Movement.canceled += (ctx) => _move = Vector2.zero;
-        _inputs.Player.Jump.performed += OnJumpPerformed;
-        _inputs.Player.Look.performed += OnLookPerformed;
+        _inputs.Player.Jump.performed += (ctx) => OnJumpPerformed();
         _inputs.UI.Pause.performed += (ctx) => GameManager.Instance.PauseGame();
-        _inputs.Player.Shoot.performed += OnPlayerShoot;
+        _inputs.Player.Shoot.performed += (ctx) => OnPlayerShoot();
+
+        _jumpBtn.onClick.AddListener(() => OnJumpPerformed());
+        _fireBtn.onClick.AddListener(() => OnPlayerShoot());
     }
-    private void OnLookPerformed(InputAction.CallbackContext context)
+    private void OnLookPerformed(Vector2 look)
     {
         if (GameManager.Instance.IsGamePaused) return;
-        transform.Rotate(Vector3.up * (context.ReadValue<Vector2>().x * _sensitivity), Space.World);
+        transform.Rotate(Vector3.up * (look.x * _sensitivity), Space.World);
 
-        Vector2 deltaRotation = new Vector2(0, context.ReadValue<Vector2>().y * _sensitivity);
+        Vector2 deltaRotation = new Vector2(0, look.y * _sensitivity);
         deltaRotation.y *= _invertVertical ? 1.0f : -1.0f;
         float pitchAngle = _head.transform.localEulerAngles.x;
         if (pitchAngle > 180) pitchAngle -= 360;
@@ -165,7 +170,7 @@ public class Player : MonoBehaviour
         _move = moveContext;
     }
 
-    private void OnJumpPerformed(InputAction.CallbackContext context)
+    private void OnJumpPerformed()
     {
         if (GameManager.Instance.IsGamePaused || !_isGrounded) return;
         _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
@@ -174,7 +179,7 @@ public class Player : MonoBehaviour
     
     private void OnPlayerRespawn()
     {
-        GameSave gameSave = GameManager.Instance.LoadGameSave();
+        GameSave gameSave = GameManager.Instance?.LoadGameSave();
         if (gameSave == null) this.transform.position = _spawnPoint.position;
         else
         {
@@ -197,7 +202,7 @@ public class Player : MonoBehaviour
         if (_curHealth <= 0) OnDeath.Invoke();
     }
 
-    private void OnPlayerShoot(InputAction.CallbackContext context)
+    private void OnPlayerShoot()
     {
         if (_shootCooldown > 0) return;
         _muzzleParticle.Play();
