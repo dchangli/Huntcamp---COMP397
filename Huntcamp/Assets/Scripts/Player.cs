@@ -210,6 +210,7 @@ public class Player : MonoBehaviour
         _shootCooldown = 1;
     }
 
+ 
     private void ShootBullet()
     {
         GameObject bullet = Instantiate(_bulletObject, _muzzlePosition.position, _muzzlePosition.rotation);
