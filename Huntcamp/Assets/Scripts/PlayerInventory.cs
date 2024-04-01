@@ -17,7 +17,7 @@ public class PlayerInventory : MonoBehaviour
 
     public void OnInitializeInventory(bool saved, List<Item> items = null)
     {
-        Slots.Instance.OnReloadSlots.Invoke(Items);
+        Slots.Instance?.OnReloadSlots?.Invoke(Items);
     }
 
     public void AddItem(Item item)
