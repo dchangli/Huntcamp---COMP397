@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Unity.Properties;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
@@ -47,6 +48,7 @@ public class Player : MonoBehaviour
     [SerializeField] Joystick _lookJoystick;
     [SerializeField] Button _jumpBtn;
     [SerializeField] Button _fireBtn;
+    [SerializeField] Button _pickBtn;
 
     [Header("Player Death")]
     [SerializeField]
@@ -73,6 +75,8 @@ public class Player : MonoBehaviour
     private float _bulletSpeed = 10;
     private float _shootCooldown = 0;
 
+    public PlayerInventory _inventory;
+
     private void Awake()
     {
         if (Instance == null)
@@ -86,6 +90,9 @@ public class Player : MonoBehaviour
         // Sets the health system
         _healthSlider.maxValue = _maxHealth;
         _curHealth = _maxHealth;
+
+        // Initializes the inventory system
+        _inventory = new PlayerInventory();
 
         // Loads the player controls in a separated method
         LoadPlayerControls();
@@ -146,9 +153,11 @@ public class Player : MonoBehaviour
         _inputs.Player.Jump.performed += (ctx) => OnJumpPerformed();
         _inputs.UI.Pause.performed += (ctx) => GameManager.Instance.PauseGame();
         _inputs.Player.Shoot.performed += (ctx) => OnPlayerShoot();
+        _inputs.Player.Interact.performed += (ctx) => onPlayerPickItem();
 
         _jumpBtn.onClick.AddListener(() => OnJumpPerformed());
         _fireBtn.onClick.AddListener(() => OnPlayerShoot());
+        _pickBtn.onClick.AddListener(() => onPlayerPickItem());
     }
     private void OnLookPerformed(Vector2 look)
     {
@@ -180,11 +189,16 @@ public class Player : MonoBehaviour
     private void OnPlayerRespawn()
     {
         GameSave gameSave = GameManager.Instance?.LoadGameSave();
-        if (gameSave == null) this.transform.position = _spawnPoint.position;
+        if (gameSave == null)
+        {
+            this.transform.position = _spawnPoint.position;
+            _inventory.OnInitialize(false, null);
+        }
         else
         {
             this.transform.position = gameSave.GetPlayerPosition();
             this._curHealth = gameSave.PlayerHealth;
+            _inventory.OnInitialize(true, null); // Change this later
         }
     }
 
@@ -217,5 +231,14 @@ public class Player : MonoBehaviour
         Vector3 shootDirection = _muzzlePosition.forward;
         Rigidbody bulletRigidbody = bullet.GetComponent<Rigidbody>();
         bulletRigidbody.AddForce(shootDirection * _bulletSpeed, ForceMode.Impulse);
+    }
+
+    private void onPlayerPickItem()
+    {
+        var colliders = Physics.OverlapSphere(transform.position, 2).Where(x => x.GetComponent<Item>() is Item).Select(x => x.GetComponent<Item>());
+        foreach(Item item in colliders)
+        {
+            _inventory.AddItem(item);
+        }
     }
 }
