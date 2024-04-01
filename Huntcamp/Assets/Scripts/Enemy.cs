@@ -54,7 +54,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void UpdateMovement()
+    public void UpdateMovement()
     {
         _agent.SetDestination(Player.Instance.transform.position);
         float distance = Vector3.Distance(Player.Instance.transform.position, this.transform.position);
@@ -87,4 +87,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /* delete enemy code
+    public void ComlpeteLife()
+    {
+        Destroy(gameObject, 2f);
+    }*/
 }
