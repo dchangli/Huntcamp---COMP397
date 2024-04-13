@@ -30,7 +30,7 @@ public class EnemyFactory : MonoBehaviour
     private IEnumerator GenerateAgents()
     {
         var time = new WaitForSeconds(_factory.SpawnTimer);
-        while (true && EnemyCount < 2)
+        while (true && EnemyCount < 3)
         {
             _factory.CreateAgent();
             StartSpawner = true;
