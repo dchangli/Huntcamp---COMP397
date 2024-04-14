@@ -22,6 +22,8 @@ public class PlayerInventory : MonoBehaviour
 
     public void AddItem(Item item)
     {
+        if (Items.Count >= 5) return;
+
         item.gameObject.SetActive(false);
         Items.Add(item);
         Slots.Instance.OnReloadSlots.Invoke(Items);

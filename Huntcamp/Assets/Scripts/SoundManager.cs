@@ -66,7 +66,7 @@ public class SoundManager : MonoBehaviour
     }
 
     // Stops the sound based on the name, if doesn't match won't be stopped
-    private void StopSound(string soundName)
+    public void StopSound(string soundName)
     {
         var sound = _sounds.FirstOrDefault(x => x.Name == soundName);
         if (sound?.Source?.isPlaying == true)

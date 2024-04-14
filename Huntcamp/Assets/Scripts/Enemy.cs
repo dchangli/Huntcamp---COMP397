@@ -50,6 +50,8 @@ public class Enemy : MonoBehaviour
 
         if (_curHealth <= 0)
         {
+            Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Kill);
+
             Destroy(this.gameObject);
         }
     }

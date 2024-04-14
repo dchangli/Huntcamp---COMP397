@@ -138,8 +138,13 @@ public class Player : MonoBehaviour
 
     private void UpdateMovmeent()
     {
-        Vector3 movement = new Vector3(_move.x, 0.0f, _move.y) * _speed * Time.fixedDeltaTime;
-        transform.Translate(movement);
+        Vector3 movement = new Vector3(_move.x, 0.0f, _move.y);
+
+        if (movement.magnitude > 0)
+        {
+            transform.Translate(movement * _speed * Time.fixedDeltaTime);
+            Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Walk);
+        }
     }
 
     private void LoadPlayerControls()
@@ -177,12 +182,16 @@ public class Player : MonoBehaviour
         if (GameManager.Instance.IsGamePaused) return;
         Vector2 moveContext = context.ReadValue<Vector2>();
         _move = moveContext;
+
+        Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Walk);
     }
 
     private void OnJumpPerformed()
     {
         if (GameManager.Instance.IsGamePaused || !_isGrounded) return;
         _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+
+        Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Jump);
 
     }
     
@@ -231,6 +240,8 @@ public class Player : MonoBehaviour
         Vector3 shootDirection = _muzzlePosition.forward;
         Rigidbody bulletRigidbody = bullet.GetComponent<Rigidbody>();
         bulletRigidbody.AddForce(shootDirection * _bulletSpeed, ForceMode.Impulse);
+
+        Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Shoot);
     }
 
     private void onPlayerPickItem()
@@ -239,6 +250,7 @@ public class Player : MonoBehaviour
         foreach(Item item in colliders)
         {
             _inventory.AddItem(item);
+            Tutorial.TutorialComplete?.Invoke((int)TutorialIndexes.Pick);
         }
     }
 }
